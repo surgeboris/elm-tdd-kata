@@ -12,11 +12,11 @@ suite =
 
 
       [ test "can be called with empty string" <|
-        \_ -> Expect.equal (StringCalculator.add "") 0
+        \_ -> Expect.equal (StringCalculator.add "") <| Ok 0
 
 
       , test "can be called with string of one number" <|
-        \_ -> Expect.equal (StringCalculator.add "123") 123
+        \_ -> Expect.equal (StringCalculator.add "123") <| Ok 123
 
 
       , test "can be called with string of any amount of numbers" <|
@@ -26,12 +26,22 @@ suite =
             n = 10
             input = String.join "," (List.repeat n "1")
           in
-            Expect.equal (StringCalculator.add input) n
+            Expect.equal (StringCalculator.add input) <| Ok n
 
 
       , test "can use newlines as delimiters between numbers" <|
         \_ ->
-          Expect.equal (StringCalculator.add "1\n2,3") 6
+          Expect.equal (StringCalculator.add "1\n2,3") <| Ok 6
+
+
+      , test "cannot be called with string ending with delimiter" <|
+        \_ ->
+          let
+            markTestFailed = Expect.false "Expected error to be returned"
+          in
+            case (StringCalculator.add "1,\n") of
+              Ok _ -> markTestFailed(True)
+              Err _ -> markTestFailed(False)
 
 
       ]]

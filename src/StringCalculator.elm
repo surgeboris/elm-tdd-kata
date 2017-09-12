@@ -2,10 +2,10 @@ module StringCalculator exposing (add)
 
 import Regex
 
-add : String -> Int
+add : String -> Result String Int
 add input =
-  if String.isEmpty input then 0
-  else splitInput >> parseNumbers >> List.sum <| input
+  if String.isEmpty input then Ok 0
+  else splitInput >> parseNumbers >> List.sum >> Ok <| input
 
 splitInput : String -> List String
 splitInput =
