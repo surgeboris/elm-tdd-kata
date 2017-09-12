@@ -29,4 +29,9 @@ suite =
             Expect.equal (StringCalculator.add input) n
 
 
+      , test "can use newlines as delimiters between numbers" <|
+        \_ ->
+          Expect.equal (StringCalculator.add "1\n2,3") 6
+
+
       ]]
