@@ -8,7 +8,11 @@ add input =
   else splitInput >> parseNumbers >> List.sum <| input
 
 splitInput : String -> List String
-splitInput = Regex.split Regex.All <| Regex.regex ",|\\n"
+splitInput =
+  let
+    delimiter = Regex.regex ",|\\n"
+  in
+    Regex.split Regex.All delimiter
 
 parseNumbers : List String -> List Int
 parseNumbers = List.map <| Result.withDefault 0 << String.toInt
