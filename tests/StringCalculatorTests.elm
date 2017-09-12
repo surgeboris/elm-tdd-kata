@@ -19,4 +19,14 @@ suite =
         \_ -> Expect.equal (StringCalculator.add "123") 123
 
 
+      , test "can be called with string of any amount of numbers" <|
+        \_ ->
+          let
+            -- put any amount as n (haven't used fuzz or Random because of "JS heap out of memory error")
+            n = 10
+            input = String.join "," (List.repeat n "1")
+          in
+            Expect.equal (StringCalculator.add input) n
+
+
       ]]
