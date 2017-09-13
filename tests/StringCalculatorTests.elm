@@ -44,4 +44,9 @@ suite =
               Err msg -> markTestFailed <| not <| String.contains "delimiter at the end" msg
 
 
+      , test "can use custom delimiter" <|
+        \_ ->
+          Expect.equal (StringCalculator.add "//;\n1;2") <| Ok 3
+
+
       ]]
