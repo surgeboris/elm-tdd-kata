@@ -13,6 +13,7 @@ add input =
     |> Result.map ignoreTooBig
     |> Result.map List.sum
 
+
 splitInput : String -> Result AdditionError (List String)
 splitInput input =
   let
@@ -28,6 +29,12 @@ splitInput input =
         else Ok <| filterEmptyStrings splitList
       Nothing -> Err "Program error: splitInput cannot get last split item!"
 
+
+getListOfSubmatches : Regex.Regex -> String -> List (Maybe String)
+getListOfSubmatches regex =
+  Regex.find Regex.All regex >> List.map .submatches >> List.concat
+
+
 type alias ParamsForSplitInput = {
   delimiter : Regex.Regex,
   strippedInput : String
@@ -41,19 +48,19 @@ getParamsForSplitInput input =
       strippedInput = input
     }
     pickCustomDelimiter =
-      Regex.find (Regex.AtMost 1) customDelimiter
-      >> List.map .submatches >> List.concat
+      getListOfSubmatches customDelimiter
       >> List.head >> Maybe.withDefault Nothing
       >> Maybe.andThen parseCustomDelimiter
     stripInput =
       Regex.replace (Regex.AtMost 1) customDelimiter <| always ""
   in
     case pickCustomDelimiter input of
-      Nothing -> defaultInputParams
       Just delimiter -> {
         delimiter = delimiter,
         strippedInput = stripInput input
       }
+      Nothing -> defaultInputParams
+
 
 parseCustomDelimiter : String -> Maybe Regex.Regex
 parseCustomDelimiter delimiterInput =
@@ -62,19 +69,20 @@ parseCustomDelimiter delimiterInput =
     multicharDelimiterRegex = Regex.regex "\\[([^[\\]]*)\\]"
     sortByStringLengthDesc = \a b -> compare (String.length b) (String.length a)
     getMulticharDelimiterList =
-      Regex.find Regex.All multicharDelimiterRegex
-      >> List.map .submatches >> List.concat
+      getListOfSubmatches multicharDelimiterRegex
       >> List.foldl (Maybe.map2 appendItemIntoList) (Just [])
       >> Maybe.map (List.sortWith sortByStringLengthDesc)
-    getDelimiterRegex = List.map Regex.escape >> String.join "|" >> Regex.regex
+    getDelimiter = List.map Regex.escape >> String.join "|" >> Regex.regex
   in
     if isSingleCharDelimiter
-      then Just <| getDelimiterRegex [delimiterInput]
+      then Just <| getDelimiter [delimiterInput]
     else
-      Maybe.map getDelimiterRegex <| getMulticharDelimiterList delimiterInput
+      Maybe.map getDelimiter <| getMulticharDelimiterList delimiterInput
+
 
 appendItemIntoList : a -> List a -> List a
 appendItemIntoList item list = list ++ [item]
+
 
 validateNumbers : List Int -> Result AdditionError (List Int)
 validateNumbers list =
@@ -85,8 +93,10 @@ validateNumbers list =
     if String.isEmpty negatives then Ok list
     else Err <| "Invalid input: negatives found - " ++ negatives
 
+
 ignoreTooBig : List Int -> List Int
 ignoreTooBig = List.map <| \item -> if item > 1000 then 0 else item
+
 
 parseNumbers : List String -> Result AdditionError (List Int)
 parseNumbers list =
