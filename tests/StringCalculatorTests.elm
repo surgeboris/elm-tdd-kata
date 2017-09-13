@@ -66,4 +66,14 @@ suite =
           Expect.equal (StringCalculator.add "2,1001") <| Ok 2
 
 
+      , test "can use custom delimiter of arbitrary length" <|
+        \_ ->
+          Expect.equal (StringCalculator.add "//[***]\n1***2***3") <| Ok 6
+
+
+      , test "can use multiple custom delimiters of arbitrary length" <|
+        \_ ->
+          Expect.equal (StringCalculator.add "//[*][**][***]\n1*2**3***4") <| Ok 10
+
+
       ]]
