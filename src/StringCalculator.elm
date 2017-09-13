@@ -10,6 +10,7 @@ add input =
   else splitInput input
     |> Result.andThen parseNumbers
     |> Result.andThen validateNumbers
+    |> Result.map ignoreTooBig
     |> Result.map List.sum
 
 splitInput : String -> Result AdditionError (List String)
@@ -61,10 +62,12 @@ validateNumbers list =
   let
     negatives = list |>
       List.filter (0 |> (>)) >> List.map toString >> String.join ","
-    ignoreTooBig = List.map <| \item -> if item > 1000 then 0 else item
  in
-    if String.isEmpty negatives then Ok <| ignoreTooBig list
+    if String.isEmpty negatives then Ok list
     else Err <| "Invalid input: negatives found - " ++ negatives
+
+ignoreTooBig : List Int -> List Int
+ignoreTooBig = List.map <| \item -> if item > 1000 then 0 else item
 
 parseNumbers : List String -> Result AdditionError (List Int)
 parseNumbers list =
