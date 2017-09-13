@@ -59,13 +59,9 @@ appendItemIntoList item list = list ++ [item]
 validateNumbers : List Int -> Result AdditionError (List Int)
 validateNumbers list =
   let
-    foldNegatives = \item result ->
-      if item < 0 then
-        if String.isEmpty result then toString item
-        else result ++ "," ++ toString item
-      else result
-    negatives = List.foldl foldNegatives "" list
-  in
+    negatives = list |>
+      List.filter (0 |> (>)) >> List.map toString >> String.join ","
+ in
     if String.isEmpty negatives then Ok list
     else Err <| "Invalid input: negatives found - " ++ negatives
 
