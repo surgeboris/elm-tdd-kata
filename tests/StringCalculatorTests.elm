@@ -61,4 +61,9 @@ suite =
                 |> Expect.true "Expected error containing all of the negatives"
 
 
+      , test "should ignore numbers bigger than 1000" <|
+        \_ ->
+          Expect.equal (StringCalculator.add "2,1001") <| Ok 2
+
+
       ]]
