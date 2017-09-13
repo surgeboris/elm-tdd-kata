@@ -9,6 +9,7 @@ add input =
   if String.isEmpty input then Ok 0
   else splitInput input
     |> Result.andThen parseNumbers
+    |> Result.andThen validateNumbers
     |> Result.map List.sum
 
 splitInput : String -> Result AdditionError (List String)
@@ -54,6 +55,19 @@ getParamsForSplitInput input =
 
 appendItemIntoList : a -> List a -> List a
 appendItemIntoList item list = list ++ [item]
+
+validateNumbers : List Int -> Result AdditionError (List Int)
+validateNumbers list =
+  let
+    foldNegatives = \item result ->
+      if item < 0 then
+        if String.isEmpty result then toString item
+        else result ++ "," ++ toString item
+      else result
+    negatives = List.foldl foldNegatives "" list
+  in
+    if String.isEmpty negatives then Ok list
+    else Err <| "Invalid input: negatives found - " ++ negatives
 
 parseNumbers : List String -> Result AdditionError (List Int)
 parseNumbers list =
