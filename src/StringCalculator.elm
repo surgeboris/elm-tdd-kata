@@ -35,7 +35,7 @@ type alias ParamsForSplitInput = {
 getParamsForSplitInput : String -> ParamsForSplitInput
 getParamsForSplitInput input =
   let
-    customDelimiter = Regex.regex "^//(.{1})\\n"
+    customDelimiter = Regex.regex "^//(.+)\\n"
     defaultInputParams = {
       delimiter = Regex.regex ",|\\n",
       strippedInput = input
@@ -44,15 +44,34 @@ getParamsForSplitInput input =
       Regex.find (Regex.AtMost 1) customDelimiter
       >> List.map .submatches >> List.concat
       >> List.head >> Maybe.withDefault Nothing
+      >> Maybe.andThen parseCustomDelimiter
     stripInput =
       Regex.replace (Regex.AtMost 1) customDelimiter <| always ""
   in
     case pickCustomDelimiter input of
       Nothing -> defaultInputParams
-      Just d -> {
-        delimiter = Regex.regex <| Regex.escape d,
+      Just delimiter -> {
+        delimiter = delimiter,
         strippedInput = stripInput input
       }
+
+parseCustomDelimiter : String -> Maybe Regex.Regex
+parseCustomDelimiter delimiterInput =
+  let
+    isSingleCharDelimiter = String.length delimiterInput == 1
+    multicharDelimiterRegex = Regex.regex "\\[([^[\\]]*)\\]"
+    sortByStringLengthDesc = \a b -> compare (String.length b) (String.length a)
+    getMulticharDelimiterList =
+      Regex.find Regex.All multicharDelimiterRegex
+      >> List.map .submatches >> List.concat
+      >> List.foldl (Maybe.map2 appendItemIntoList) (Just [])
+      >> Maybe.map (List.sortWith sortByStringLengthDesc)
+    getDelimiterRegex = List.map Regex.escape >> String.join "|" >> Regex.regex
+  in
+    if isSingleCharDelimiter
+      then Just <| getDelimiterRegex [delimiterInput]
+    else
+      Maybe.map getDelimiterRegex <| getMulticharDelimiterList delimiterInput
 
 appendItemIntoList : a -> List a -> List a
 appendItemIntoList item list = list ++ [item]
