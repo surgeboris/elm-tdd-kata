@@ -40,8 +40,8 @@ suite =
             markTestFailed = Expect.false "Expected error to be returned"
           in
             case (StringCalculator.add "1,\n") of
-              Ok _ -> markTestFailed(True)
-              Err _ -> markTestFailed(False)
+              Ok _ -> markTestFailed True
+              Err msg -> markTestFailed <| not <| String.contains "delimiter at the end" msg
 
 
       ]]
