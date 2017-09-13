@@ -49,4 +49,16 @@ suite =
           Expect.equal (StringCalculator.add "//;\n1;2") <| Ok 3
 
 
+      , test "cannot be called with negatives" <|
+        \_ ->
+          let
+            input = "-1,-2,-3,-4"
+          in
+            case (StringCalculator.add input) of
+              Ok _ -> Expect.true "Expected error to be returned" False
+              Err errorMsg ->
+                String.contains input errorMsg
+                |> Expect.true "Expected error containing all of the negatives"
+
+
       ]]
