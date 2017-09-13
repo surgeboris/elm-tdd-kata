@@ -61,8 +61,9 @@ validateNumbers list =
   let
     negatives = list |>
       List.filter (0 |> (>)) >> List.map toString >> String.join ","
+    ignoreTooBig = List.map <| \item -> if item > 1000 then 0 else item
  in
-    if String.isEmpty negatives then Ok list
+    if String.isEmpty negatives then Ok <| ignoreTooBig list
     else Err <| "Invalid input: negatives found - " ++ negatives
 
 parseNumbers : List String -> Result AdditionError (List Int)
