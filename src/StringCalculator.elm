@@ -14,7 +14,7 @@ add input =
 splitInput : String -> Result AdditionError (List String)
 splitInput input =
   let
-    { delimiter, strippedInput } = getDelimiter input
+    { delimiter, strippedInput } = getParamsForSplitInput input
     splitList = Regex.split Regex.All delimiter strippedInput
     filterEmptyStrings = List.filter <| not << String.isEmpty
     lastSplitItem = (List.head << List.reverse) splitList
@@ -26,15 +26,18 @@ splitInput input =
         else Ok <| filterEmptyStrings splitList
       Nothing -> Err "Program error: splitInput cannot get last split item!"
 
-type alias DelimiterData = {
+type alias ParamsForSplitInput = {
   delimiter : Regex.Regex,
   strippedInput : String
 }
-getDelimiter : String -> DelimiterData
-getDelimiter input =
+getParamsForSplitInput : String -> ParamsForSplitInput
+getParamsForSplitInput input =
   let
     customDelimiter = Regex.regex "^//(.{1})\\n"
-    defaultDelimiter = Regex.regex ",|\\n"
+    defaultInputParams = {
+      delimiter = Regex.regex ",|\\n",
+      strippedInput = input
+    }
     pickCustomDelimiter =
       Regex.find (Regex.AtMost 1) customDelimiter
       >> List.map .submatches >> List.concat
@@ -43,12 +46,9 @@ getDelimiter input =
       Regex.replace (Regex.AtMost 1) customDelimiter <| always ""
   in
     case pickCustomDelimiter input of
-      Nothing -> {
-        delimiter = defaultDelimiter,
-        strippedInput = input
-      }
-      Just r -> {
-        delimiter = Regex.regex <| Regex.escape r,
+      Nothing -> defaultInputParams
+      Just d -> {
+        delimiter = Regex.regex <| Regex.escape d,
         strippedInput = stripInput input
       }
 
